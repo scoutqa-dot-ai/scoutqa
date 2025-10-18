@@ -1,0 +1,15 @@
+{
+  "name": "scoutqa-dot-ai",
+  "private": true,
+  "packageManager": "pnpm@10.18.3",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "version": "lerna version --no-push"
+  },
+  "dependencies": {
+    "lerna": "^8.2.4",
+    "prettier": "^3.6.2"
+  }
+}
