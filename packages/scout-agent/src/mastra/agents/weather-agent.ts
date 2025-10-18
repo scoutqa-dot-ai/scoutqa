@@ -1,6 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
 import { LibSQLStore } from "@mastra/libsql";
+import { bedrock } from "../../lib/llm";
 import { weatherTool } from "../tools/weather-tool";
 
 export const weatherAgent = new Agent({
@@ -19,7 +20,7 @@ export const weatherAgent = new Agent({
 
       Use the weatherTool to fetch current weather data.
 `,
-  model: "anthropic/claude-3-5-sonnet-20241022",
+  model: bedrock("us.anthropic.claude-sonnet-4-5-20250929-v1:0"),
   tools: { weatherTool },
   memory: new Memory({
     storage: new LibSQLStore({

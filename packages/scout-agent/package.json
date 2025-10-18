@@ -17,6 +17,8 @@
     "node": ">=20.9.0"
   },
   "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^3.0.30",
+    "@aws-sdk/credential-providers": "^3.913.0",
     "zod": "^4.1.12"
   },
   "peerDependencies": {
