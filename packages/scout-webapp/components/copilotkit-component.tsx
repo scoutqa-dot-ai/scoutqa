@@ -5,7 +5,7 @@ import "@copilotkit/react-ui/styles.css";
 
 export function CopilotKitComponent() {
   return (
-    <CopilotKit runtimeUrl="/api/copilotkit" agent="weatherAgent">
+    <CopilotKit runtimeUrl="/api/copilotkit" agent="testLeadAgent">
       <CopilotChat
         labels={{
           title: "Your Assistant",

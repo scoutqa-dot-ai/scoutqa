@@ -16,6 +16,7 @@
     "@mastra/core": "^0.21.1",
     "@mastra/libsql": "^0.15.2",
     "@mastra/loggers": "^0.10.16",
+    "@mastra/mcp": "^0.13.5",
     "@mastra/memory": "^0.15.7",
     "@scoutqa-dot-ai/scout-agent": "workspace:*",
     "next": "15.5.6",
