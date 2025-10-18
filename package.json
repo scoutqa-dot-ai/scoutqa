@@ -4,6 +4,8 @@
   "packageManager": "pnpm@10.18.3",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
+    "dev": "lerna run dev --parallel",
+    "lint": "lerna run lint --parallel",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "version": "lerna version --no-push"
