@@ -17,11 +17,13 @@
     "node": ">=20.9.0"
   },
   "dependencies": {
+    "zod": "^4.1.12"
+  },
+  "peerDependencies": {
     "@mastra/core": "^0.21.1",
     "@mastra/libsql": "^0.15.2",
     "@mastra/loggers": "^0.10.16",
-    "@mastra/memory": "^0.15.7",
-    "zod": "^4.1.12"
+    "@mastra/memory": "^0.15.7"
   },
   "devDependencies": {
     "@types/node": "^20.19.22",

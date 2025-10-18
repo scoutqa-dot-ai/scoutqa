@@ -1,4 +1,7 @@
 packages/scout-agent/.mastra/
+*.db
+*.db-shm
+*.db-wal
 
 # https://github.com/github/gitignore/blob/fc6ce5d/Node.gitignore
 # Logs
