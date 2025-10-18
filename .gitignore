@@ -1,3 +1,5 @@
+packages/scout-agent/.mastra/
+
 # https://github.com/github/gitignore/blob/fc6ce5d/Node.gitignore
 # Logs
 logs
