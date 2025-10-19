@@ -4,14 +4,15 @@ import {
   ExperimentalEmptyAdapter,
   copilotRuntimeNextJSAppRouterEndpoint,
 } from "@copilotkit/runtime";
-import { MastraAgent } from "@ag-ui/mastra";
+import { AGENT_ID_TEST_LEAD_AGENT } from "@scoutqa-dot-ai/scout-agent/src/config/constants";
 import { NextRequest } from "next/server";
+import { MastraAgent } from "@/lib/ag-ui/mastra-agent";
 
 export const POST = async (req: NextRequest) => {
-  const mastraAgents = MastraAgent.getLocalAgents({ mastra });
+  const testLeadAgent = new MastraAgent(mastra.getAgent("testLeadAgent"));
 
   const runtime = new CopilotRuntime({
-    agents: mastraAgents,
+    agents: { [AGENT_ID_TEST_LEAD_AGENT]: testLeadAgent },
   });
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({

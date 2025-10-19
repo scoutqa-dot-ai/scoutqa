@@ -30,6 +30,10 @@ export async function buildManualTesterAgent(ctx: BuildManualTesterAgentInput) {
 
   const tools = await client.getTools();
 
+  delete tools["browser_browser_close"]; // each thread only has one browser session
+  delete tools["browser_browser_install"]; // for obvious reason...
+  delete tools["browser_browser_take_screenshot"]; // avoid exceeding token limit
+
   const manualTesterAgent = new Agent({
     name: "Manual Tester Agent",
     instructions: "You are a manual tester who executes test scenarios",

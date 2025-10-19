@@ -1,9 +1,10 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
+import { TOOL_ID_EXECUTE_TEST_SCENARIO } from "../../config/constants";
 import { buildManualTesterAgent } from "../agents/manual-tester-agent";
 
 export const executeTestScenarioTool = createTool({
-  id: "execute-test-scenario",
+  id: TOOL_ID_EXECUTE_TEST_SCENARIO,
   description: "Ask Manual Tester to execute a test scenario",
   inputSchema: z.object({
     overall: z.string().describe("The overall plan"),
@@ -25,12 +26,17 @@ export const executeTestScenarioTool = createTool({
         ],
         {
           abortSignal: opts?.abortSignal,
+          maxSteps: 20,
           memory: {
             resource: ctx.resourceId!,
             thread: `${ctx.threadId}/${opts?.toolCallId}`,
           },
+          runId: ctx.runId,
+          runtimeContext: ctx.runtimeContext,
         }
       );
+
+      streamOutput.fullStream.pipeTo(ctx.writer!);
 
       const result = await streamOutput.text;
       return { result };
