@@ -1,0 +1,5 @@
+node_modules
+terraform
+*/**/.mastra
+*/**/.next
+*/**/node_modules

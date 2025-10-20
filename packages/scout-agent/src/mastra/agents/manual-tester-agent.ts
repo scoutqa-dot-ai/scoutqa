@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { Mastra } from "@mastra/core";
 import { Agent } from "@mastra/core/agent";
 import { MCPClient } from "@mastra/mcp";
@@ -10,23 +11,37 @@ import {
 export type BuildManualTesterAgentInput = StartOrGetBrowserSessionInput;
 
 export async function buildManualTesterAgent(ctx: BuildManualTesterAgentInput) {
+  const logger = ctx.mastra!.getLogger();
   const browserSession = await startOrGetBrowserSession(ctx);
   const ws = await browserSession.generateWsEndpointAndHeaders();
-  const args: string[] = [
-    "@playwright/mcp@0.0.43",
+
+  const args: string[] = [];
+  const cliPath = "/usr/local/lib/node_modules/@playwright/mcp/cli.js";
+  if (existsSync(cliPath)) {
+    // most likely running in our Docker image -> use the globally installed one
+    args.push(cliPath);
+  } else {
+    args.push("npx", "@playwright/mcp@0.0.43");
+  }
+
+  // log early before credentials are added
+  logger.debug("Starting Playwright MCP client...", { args });
+
+  args.push(
     "--cdp-endpoint",
     ws.endpoint,
     ...Object.entries(ws.headers)
       .map(([k, v]) => ["--cdp-header", `${k}:${v}`])
-      .flat(),
-  ];
+      .flat()
+  );
 
+  const command = args.shift()!;
   const client = new MCPClient({
     servers: {
-      browser: { command: "npx", args },
+      browser: { command, args },
     },
   });
-  client.__setLogger(ctx.mastra!.getLogger());
+  client.__setLogger(logger);
 
   const tools = await client.getTools();
 

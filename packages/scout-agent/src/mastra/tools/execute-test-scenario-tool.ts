@@ -27,10 +27,6 @@ export const executeTestScenarioTool = createTool({
         {
           abortSignal: opts?.abortSignal,
           maxSteps: 20,
-          memory: {
-            resource: ctx.resourceId!,
-            thread: `${ctx.threadId}/${opts?.toolCallId}`,
-          },
           runId: ctx.runId,
           runtimeContext: ctx.runtimeContext,
         }

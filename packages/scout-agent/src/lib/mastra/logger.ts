@@ -1,9 +1,8 @@
 import { LogLevel, MastraLogger } from "@mastra/core/logger";
 import { PinoLogger } from "@mastra/loggers";
+import { SCOUTQA_LOG_LEVEL } from "../../config/env";
 
-export const logLevel =
-  (process.env["LOG_LEVEL"] as LogLevel) ||
-  (process.env["NODE_ENV"] === "production" ? "info" : "debug");
+export const logLevel = SCOUTQA_LOG_LEVEL as LogLevel;
 
 export const logger: MastraLogger = new PinoLogger({
   level: logLevel,
