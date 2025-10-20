@@ -85,6 +85,7 @@ export class MastraAgent extends AbstractAgent {
             },
             runId,
             runtimeContext,
+            savePerStep: true,
           });
 
           for await (const chunk of streamOutput.fullStream) {

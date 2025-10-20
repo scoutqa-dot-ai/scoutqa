@@ -159,6 +159,8 @@ module "ecs_service" {
   tasks_iam_role_statements = [
     {
       actions = [
+        "aws-marketplace:ViewSubscriptions",
+        "aws-marketplace:Subscribe",
         "bedrock:InvokeModel",
         "bedrock:InvokeModelWithResponseStream",
       ]
