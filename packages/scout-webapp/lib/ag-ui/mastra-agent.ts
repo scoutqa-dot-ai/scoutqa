@@ -6,6 +6,7 @@ import type { BaseEvent, RunAgentInput } from "@ag-ui/client";
 import { convertAGUIMessagesToMastra } from "@ag-ui/mastra";
 import type { Agent } from "@mastra/core/agent";
 import { RuntimeContext } from "@mastra/core/runtime-context";
+import { startOrGetBrowserSession } from "@scoutqa-dot-ai/scout-agent/src/lib/browser";
 import { Observable } from "rxjs";
 import { Publisher } from "./publisher";
 
@@ -66,6 +67,13 @@ export class MastraAgent extends AbstractAgent {
               return;
             }
           }
+
+          // optimization: setup browser as soon as possible
+          startOrGetBrowserSession({
+            mastra: agent.getMastraInstance(),
+            runtimeContext,
+            threadId,
+          }).catch(() => {});
 
           const publisher = new Publisher(subscriber, { threadId, runId });
           const streamOutput = await agent.stream([message], {
