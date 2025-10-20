@@ -1,7 +1,8 @@
 import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
-import { bedrock } from "../../lib/llm";
 import { AGENT_ID_TEST_LEAD_AGENT } from "../../config/constants";
+import { SCOUTQA_TEST_LEAD_AGENT_MODEL } from "../../config/env";
+import { llm } from "../../lib/llm";
 import { executeTestScenarioTool } from "../tools/execute-test-scenario-tool";
 
 export const testLeadAgent = new Agent({
@@ -19,7 +20,7 @@ export const testLeadAgent = new Agent({
     - In case of catastrophic failure reported by the Manual Tester, inform the user before proceeding
     - Report the results of the executed test scenarios
   `,
-  model: bedrock("us.anthropic.claude-sonnet-4-5-20250929-v1:0"),
+  model: llm(SCOUTQA_TEST_LEAD_AGENT_MODEL),
   tools: {
     [executeTestScenarioTool.id]: executeTestScenarioTool,
   },

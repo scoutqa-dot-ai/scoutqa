@@ -2,11 +2,12 @@ import { existsSync } from "node:fs";
 import { Mastra } from "@mastra/core";
 import { Agent } from "@mastra/core/agent";
 import { MCPClient } from "@mastra/mcp";
-import { bedrock } from "../../lib/llm";
+import { SCOUTQA_MANUAL_TESTER_AGENT_MODEL } from "../../config/env";
 import {
   startOrGetBrowserSession,
   StartOrGetBrowserSessionInput,
 } from "../../lib/browser";
+import { llm } from "../../lib/llm";
 
 export type BuildManualTesterAgentInput = StartOrGetBrowserSessionInput;
 
@@ -52,7 +53,7 @@ export async function buildManualTesterAgent(ctx: BuildManualTesterAgentInput) {
   const manualTesterAgent = new Agent({
     name: "Manual Tester Agent",
     instructions: "You are a manual tester who executes test scenarios",
-    model: bedrock("us.anthropic.claude-haiku-4-5-20251001-v1:0"),
+    model: llm(SCOUTQA_MANUAL_TESTER_AGENT_MODEL),
     tools,
   });
   manualTesterAgent.__registerMastra(ctx.mastra! as Mastra);
