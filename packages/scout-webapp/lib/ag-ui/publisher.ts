@@ -22,13 +22,19 @@ import type { Subscriber } from "rxjs";
 
 export class Publisher {
   private messageId = randomUUID();
+  private debugWriteEventsJson: boolean;
   private threadId: string;
   private runId: string;
 
   constructor(
     private subscriber: Subscriber<BaseEvent>,
-    { threadId, runId }: { threadId: string; runId: string }
+    {
+      debugWriteEventsJson,
+      threadId,
+      runId,
+    }: { debugWriteEventsJson?: boolean; threadId: string; runId: string }
   ) {
+    this.debugWriteEventsJson = debugWriteEventsJson ?? true;
     this.threadId = threadId;
     this.runId = runId;
 
@@ -37,11 +43,18 @@ export class Publisher {
       threadId,
       runId,
     };
-    this.publish(runStartedEvent);
+    this.subscriber.next(runStartedEvent);
   }
 
   publish(event: BaseEvent) {
     this.subscriber.next(event);
+
+    if (
+      process.env["NODE_ENV"] === "development" &&
+      this.debugWriteEventsJson
+    ) {
+      appendFileSync(`${this.runId}.json`, `${JSON.stringify(event)}\n`);
+    }
   }
 
   publishChunk(chunk: ChunkType, parentToolCallId?: string) {
