@@ -1,13 +1,11 @@
 import {
-  AWS_AGENT_CORE_BROWSER_NAME_PREFIX,
+  BROWSER_SESSION_NAME_PREFIX,
   RUNTIME_CONTEXT_KEY_BROWSER_SESSION_PREFIX,
 } from "../../config/constants";
-import {
-  BrowserSession,
-  getBrowserSession,
-  startBrowserSession,
-} from "./agentcore";
 import { getWorkingMemory, GetWorkingMemoryInput } from "../working-memory";
+import * as agentcore from "./agentcore";
+import * as browserbase from "./browserbase";
+import { BrowserSession } from "./browser-session";
 
 export type StartOrGetBrowserSessionInput = GetWorkingMemoryInput;
 
@@ -18,30 +16,49 @@ export async function startOrGetBrowserSession(
   const logger = mastra!.getLogger();
   const wm = await getWorkingMemory(ctx);
 
-  const { browserSessionId: sessionId } = wm.get();
-  if (typeof sessionId === "string") {
-    const existingKey = `${RUNTIME_CONTEXT_KEY_BROWSER_SESSION_PREFIX}${sessionId}`;
+  const { browser } = wm.get();
+  if (typeof browser !== "undefined") {
+    const { provider, sessionId } = browser;
+    const existingKey = `${RUNTIME_CONTEXT_KEY_BROWSER_SESSION_PREFIX}${provider}${sessionId}`;
     const cached = runtimeContext.get<string, BrowserSession>(existingKey);
     if (cached) {
-      logger.debug("Reusing cached browser session", { sessionId });
+      logger.debug("Reusing cached browser session", browser);
       return cached;
     }
 
-    const existingSession = await getBrowserSession({ sessionId });
-    runtimeContext.set(existingKey, existingSession);
-    logger.debug("Restored existing browser session", { sessionId });
-    return existingSession;
+    switch (browser.provider) {
+      case "aws": {
+        const existingSession = await agentcore.getBrowserSession(browser);
+        runtimeContext.set(existingKey, existingSession);
+        logger.debug("Restored existing browser session", browser);
+        return existingSession;
+      }
+      case "browserbase": {
+        const existingSession = await browserbase.retrieveSession(sessionId);
+        runtimeContext.set(existingKey, existingSession);
+        logger.debug("Restored existing browser session", browser);
+        return existingSession;
+      }
+    }
   }
 
-  const name = `${AWS_AGENT_CORE_BROWSER_NAME_PREFIX}${ctx.threadId}`;
-  const newSession = await startBrowserSession({ name });
-  await wm.set({ browserSessionId: newSession.sessionId });
-  const newKey = `${RUNTIME_CONTEXT_KEY_BROWSER_SESSION_PREFIX}${newSession.sessionId}`;
-  runtimeContext.set(newKey, newSession);
-  logger.debug("Started new browser session", {
+  const name = `${BROWSER_SESSION_NAME_PREFIX}${ctx.threadId}`;
+  let newSession: BrowserSession;
+  if ((process.env["BROWSERBASE_API_KEY"] || "").length > 0) {
+    newSession = await browserbase.createBrowserbaseSession({ name });
+  } else {
+    newSession = await agentcore.startBrowserSession({ name });
+  }
+
+  const newBrowser = {
+    provider: newSession.provider,
     sessionId: newSession.sessionId,
-  });
+  } as const;
+  await wm.set({ browser: newBrowser });
+  const newKey = `${RUNTIME_CONTEXT_KEY_BROWSER_SESSION_PREFIX}${newSession.provider}${newSession.sessionId}`;
+  runtimeContext.set(newKey, newSession);
+  logger.debug("Started new browser session", newBrowser);
   return newSession;
 }
 
-export type { BrowserSession } from "./agentcore";
+export type { BrowserSession } from "./browser-session";

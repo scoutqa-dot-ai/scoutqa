@@ -9,28 +9,27 @@ import {
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 import { HttpRequest } from "@smithy/protocol-http";
 import { SignatureV4 } from "@smithy/signature-v4";
-import { AWS_AGENT_CORE_BROWSER_IDENTIFIER } from "../../config/constants";
+import {
+  AWS_AGENT_CORE_BROWSER_IDENTIFIER,
+  BROWSER_SESSION_TIMEOUT_SECONDS_DEFAULT,
+} from "../../config/constants";
+import { BrowserSession, fixedViewport } from "./browser-session";
 
 const client = new BedrockAgentCoreClient();
-
-// must use a fixed viewport for computer use tool
-// https://docs.claude.com/en/docs/agents-and-tools/tool-use/computer-use-tool#follow-implementation-best-practices
-const viewPort = { width: 1366, height: 768 } as const;
 
 function getAwsCredentialIdentity() {
   const credentialProvider = fromNodeProviderChain();
   return credentialProvider();
 }
 
-export class BrowserSession {
+class AgentCoreBrowserSession implements BrowserSession {
+  public readonly provider = "aws";
+  public readonly viewport = fixedViewport;
+
   constructor(
     public readonly sessionId: string,
     private readonly streams: BrowserSessionStream | undefined
   ) {}
-
-  get viewPort() {
-    return viewPort;
-  }
 
   async generateWsEndpointAndHeaders() {
     const { automationStream } = this.streams ?? {};
@@ -91,7 +90,7 @@ export class BrowserSession {
 export async function startBrowserSession({
   browserIdentifier = AWS_AGENT_CORE_BROWSER_IDENTIFIER,
   name,
-  sessionTimeoutSeconds = 900,
+  sessionTimeoutSeconds = BROWSER_SESSION_TIMEOUT_SECONDS_DEFAULT,
 }: {
   browserIdentifier?: string;
   name: string;
@@ -101,25 +100,26 @@ export async function startBrowserSession({
     browserIdentifier,
     name,
     sessionTimeoutSeconds,
-    viewPort,
+    viewPort: fixedViewport,
   });
   const startOutput = await client.send(startCmd);
-  return new BrowserSession(startOutput.sessionId!, startOutput.streams);
-}
-
-export interface GetBrowserSessionInput {
-  browserIdentifier?: string;
-  sessionId: string;
+  return new AgentCoreBrowserSession(
+    startOutput.sessionId!,
+    startOutput.streams
+  );
 }
 
 export async function getBrowserSession({
   browserIdentifier = AWS_AGENT_CORE_BROWSER_IDENTIFIER,
   sessionId,
-}: GetBrowserSessionInput): Promise<BrowserSession> {
+}: {
+  browserIdentifier?: string;
+  sessionId: string;
+}): Promise<BrowserSession> {
   const getCmd = new GetBrowserSessionCommand({
     browserIdentifier,
     sessionId,
   });
   const getOutput = await client.send(getCmd);
-  return new BrowserSession(getOutput.sessionId!, getOutput.streams);
+  return new AgentCoreBrowserSession(getOutput.sessionId!, getOutput.streams);
 }

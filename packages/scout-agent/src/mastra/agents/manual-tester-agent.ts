@@ -31,7 +31,7 @@ export async function buildManualTesterAgent(ctx: BuildManualTesterAgentInput) {
   args.push(
     "--cdp-endpoint",
     ws.endpoint,
-    ...Object.entries(ws.headers)
+    ...Object.entries(ws.headers ?? {})
       .map(([k, v]) => ["--cdp-header", `${k}:${v}`])
       .flat()
   );

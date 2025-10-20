@@ -7,7 +7,10 @@ import {
 } from "../config/constants";
 
 interface WorkingMemoryValue {
-  browserSessionId?: string;
+  browser?: {
+    provider: "aws" | "browserbase";
+    sessionId: string;
+  };
 }
 
 export interface WorkingMemory {
