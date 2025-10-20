@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { Tool } from "./tool-call-manager";
 
@@ -8,17 +9,17 @@ function generateToolName(tool: Tool): string {
       case "execute-test-scenario":
         return knownTool.args.scenario;
       case "browser_browser_click":
-        return `Click: ${knownTool.args.element}`;
+        return `Click on ${knownTool.args.element}`;
       case "browser_browser_hover":
-        return `Hover: ${knownTool.args.element}`;
+        return `Hover on ${knownTool.args.element}`;
       case "browser_browser_navigate":
-        return `Navigate: ${knownTool.args.url}`;
+        return `Navigate to ${knownTool.args.url}`;
       case "browser_browser_press_key":
-        return `Press key: ${knownTool.args.key}`;
+        return `Press ${knownTool.args.key}`;
       case "browser_browser_select_option":
-        return `Select option: ${knownTool.args.element}`;
+        return `Select option ${knownTool.args.element}`;
       case "browser_browser_type":
-        return `Type: ${knownTool.args.text} into ${knownTool.args.element}`;
+        return `Type ${knownTool.args.text} into ${knownTool.args.element}`;
     }
   }
 
@@ -34,15 +35,57 @@ function generateToolName(tool: Tool): string {
   return "";
 }
 
-export const ToolCallItem = ({
-  depth = 0,
-  tool,
-}: {
-  depth?: number;
-  tool: Tool | undefined;
-}) => {
-  const isRoot = depth === 0;
-  const [isExpanded, setIsExpanded] = useState(isRoot ? false : true);
+const InProgressNestedToolCall = ({ tool }: { tool: Tool }) => {
+  const toolName = generateToolName(tool);
+  if (toolName.length === 0) {
+    return null;
+  }
+
+  return (
+    <div
+      className="text-xs text-gray-800 line-clamp-1"
+      data-id={tool.toolCallId}
+    >
+      {toolName}
+    </div>
+  );
+};
+
+const NestedToolCallItem = ({ tool }: { tool: Tool }) => {
+  const toolName = generateToolName(tool);
+  if (toolName.length === 0) {
+    return null;
+  }
+
+  const { result } = tool;
+
+  return (
+    <li className="text-sm line-clamp-1" data-id={tool.toolCallId}>
+      {result.type === "in_progress" ? (
+        <motion.span
+          className="text-gray-800"
+          animate={{ opacity: [1, 0.2, 1] }}
+          transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          {toolName}
+        </motion.span>
+      ) : (
+        <span className="text-gray-800">{toolName}</span>
+      )}{" "}
+      {result.type === "completed" && (
+        <span className="text-xs text-green-600">✓</span>
+      )}
+      {result.type === "failed" && (
+        <span className="text-xs text-red-600">
+          {process.env["NODE_ENV"] === "development" ? result.error : "✗"}
+        </span>
+      )}
+    </li>
+  );
+};
+
+export const ToolCallItem = ({ tool }: { tool: Tool | undefined }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (!tool) {
     return null;
@@ -53,52 +96,63 @@ export const ToolCallItem = ({
     return null;
   }
 
-  const isInProgress = tool.result.type === "in_progress";
-  const isCompleted = tool.result.type === "completed";
-  const isFailed = tool.result.type === "failed";
+  const { result } = tool;
 
   return (
     <div
-      className="border border-gray-300 rounded-lg p-3 mb-2 bg-white"
+      className="border border-gray-300 rounded-sm p-3 mt-2 w-full"
       data-id={tool.toolCallId}
     >
-      <div className="flex items-center gap-2">
-        {isRoot && (
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center justify-center w-5 h-5 hover:bg-gray-100 rounded"
-            aria-label={isExpanded ? "Collapse" : "Expand"}
-          >
-            <span className="text-sm">{isExpanded ? "▼" : "▶"}</span>
-          </button>
-        )}
-        <span className="font-semibold text-gray-800">{toolName}</span>
-        {isInProgress && (
-          <span className="text-xs text-blue-600 flex items-center gap-1">
-            <span className="inline-block w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
-            In Progress
+      <div
+        className="cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+        aria-label={isExpanded ? "Collapse" : "Expand"}
+      >
+        <div className="flex-1 flex items-center">
+          <span className="font-semibold text-gray-800 whitespace-pre line-clamp-1 flex-1">
+            {toolName}
           </span>
-        )}
-        {isCompleted && (
-          <span className="text-xs text-green-600">✓ Completed</span>
-        )}
-        {isFailed && <span className="text-xs text-red-600">✗ Failed</span>}
-      </div>
-
-      {isExpanded && (
-        <div className="mt-3 ml-7 space-y-2">
-          {tool.children.length > 0 && (
-            <div>
-              {tool.children.map((child) => (
-                <ToolCallItem
-                  key={child.toolCallId}
-                  depth={depth + 1}
-                  tool={child}
-                />
-              ))}
-            </div>
+          {result.type === "in_progress" && (
+            <span className="text-xs text-blue-600 flex-none">In Progress</span>
+          )}
+          {result.type === "completed" && (
+            <span className="text-xs text-green-600 flex-none">Completed</span>
+          )}
+          {result.type === "failed" && (
+            <span
+              className="text-xs text-red-600 flex-none"
+              data-error={
+                process.env["NODE_ENV"] === "development"
+                  ? result.error
+                  : undefined
+              }
+            >
+              Failed
+            </span>
           )}
         </div>
+      </div>
+
+      {!isExpanded &&
+        result.type === "in_progress" &&
+        tool.children.length > 0 && (
+          <motion.div
+            className="mt-2"
+            animate={{ opacity: [1, 0.2, 1] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <InProgressNestedToolCall
+              tool={tool.children[tool.children.length - 1]}
+            />
+          </motion.div>
+        )}
+
+      {isExpanded && tool.children.length > 0 && (
+        <ul className="mt-2 space-y-2">
+          {tool.children.map((child) => (
+            <NestedToolCallItem key={child.toolCallId} tool={child} />
+          ))}
+        </ul>
       )}
     </div>
   );

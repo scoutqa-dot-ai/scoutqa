@@ -16,6 +16,7 @@ export function Chat() {
     >
       <ToolCallManagerProvider>
         <CopilotChat
+          className="h-full"
           RenderMessage={RenderMessage}
           labels={{
             title: "Scout QA",

@@ -49,6 +49,11 @@ export const RenderMessage = ({
         }
       }
 
+      const content = message?.content || "";
+      if (content.length === 0) {
+        return null;
+      }
+
       // https://github.com/CopilotKit/CopilotKit/blob/b698003/CopilotKit/packages/react-ui/src/components/chat/messages/RenderMessage.tsx#L37
       return (
         <AssistantMessage

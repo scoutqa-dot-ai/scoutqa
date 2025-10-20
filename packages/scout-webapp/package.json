@@ -21,6 +21,7 @@
     "@mastra/mcp": "^0.13.5",
     "@mastra/memory": "^0.15.7",
     "@scoutqa-dot-ai/scout-agent": "workspace:*",
+    "framer-motion": "^12.23.24",
     "next": "15.5.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",

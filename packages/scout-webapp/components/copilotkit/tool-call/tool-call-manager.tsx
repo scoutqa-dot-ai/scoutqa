@@ -79,7 +79,12 @@ export class ToolCallManager {
     tool.result = { type: "completed", data: toolResult.result };
     const knownResult = knownResultSchema.safeParse(toolResult.result);
     if (knownResult.success) {
-      tool.result = { type: "failed", error: knownResult.data.message };
+      const r = knownResult.data;
+      if ("error" in r) {
+        tool.result = { type: "failed", error: r.message };
+      } else if ("isError" in r && r.content.length === 1) {
+        tool.result = { type: "failed", error: r.content[0].text };
+      }
     }
 
     this.notifyByToolCallId(toolCallId);

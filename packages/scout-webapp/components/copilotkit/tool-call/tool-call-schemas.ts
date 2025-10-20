@@ -74,6 +74,11 @@ export const knownResultSchema = z.union([
     error: z.literal(true),
     message: z.string(),
   }),
+  z.object({
+    // {"args":{"url":"https://hoangson.vn"},"toolCallId":"tooluse_7xRWzZnbRz64HnFtQ0I1Zg","toolName":"browser_browser_navigate","result":{"content":[{"type":"text","text":"### Result\nTimeoutError: page._snapshotForAI: Timeout 5000ms exceeded.\n\n### Ran Playwright code\n```js\nawait page.goto('https://hoangson.vn');\n```\n"}],"isError":true},"parentToolCallId":"tooluse_EVd_JEQ4R8q-3drlzOiyYA"}
+    isError: z.literal(true),
+    content: z.array(z.object({ type: z.literal("text"), text: z.string() })),
+  }),
 ]);
 
 export type KnownResult = z.infer<typeof knownResultSchema>;
