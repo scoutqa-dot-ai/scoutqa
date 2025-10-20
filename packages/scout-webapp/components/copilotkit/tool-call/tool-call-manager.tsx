@@ -1,6 +1,5 @@
 import { createContext } from "react";
 import {
-  KnownResult,
   knownResultSchema,
   KnownTool,
   knownToolSchema,
