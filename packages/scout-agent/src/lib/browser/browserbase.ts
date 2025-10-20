@@ -6,7 +6,9 @@ import {
   fixedViewport,
 } from "./browser-session";
 
-const bb = new Browserbase();
+export const apiKey = process.env["BROWSERBASE_API_KEY"] || "";
+
+const bb = new Browserbase({ apiKey });
 
 class BrowserbaseSession implements BrowserSession {
   public readonly provider = "browserbase";

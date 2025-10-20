@@ -3,20 +3,6 @@ variable "name" {
   default = "scoutqa"
 }
 
-variable "langfuse_secret_key" {
-  type      = string
-  sensitive = true
-}
-
-variable "langfuse_public_key" {
-  type    = string
-}
-
-variable "langfuse_baseurl" {
-  type    = string
-  default = "https://us.cloud.langfuse.com"
-}
-
 variable "region" {
   type    = string
   default = "us-east-1"
@@ -30,6 +16,6 @@ variable "region_azs" {
 variable "tags" {
   type = map(string)
   default = {
-    service    = "scoutqa"
+    service = "scoutqa"
   }
 }

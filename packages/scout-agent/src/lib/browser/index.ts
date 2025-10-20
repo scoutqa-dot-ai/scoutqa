@@ -44,7 +44,7 @@ export async function startOrGetBrowserSession(
 
   const name = `${BROWSER_SESSION_NAME_PREFIX}${ctx.threadId}`;
   let newSession: BrowserSession;
-  if ((process.env["BROWSERBASE_API_KEY"] || "").length > 0) {
+  if (browserbase.apiKey.length > 0) {
     newSession = await browserbase.createBrowserbaseSession({ name });
   } else {
     newSession = await agentcore.startBrowserSession({ name });

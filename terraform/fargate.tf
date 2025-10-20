@@ -2,14 +2,10 @@ data "aws_caller_identity" "this" {}
 data "aws_ecr_authorization_token" "token" {}
 
 locals {
-  source_path   = "../../.."
-  path_include  = ["**"]
-  path_exclude  = ["**/node_modules/**", "**/.mastra/**", "**/.next/**", "**/terraform/**", "*.tf", "*.tfstate", "*.tfstate.backup"]
-  files_include = setunion([for f in local.path_include : fileset(local.source_path, f)]...)
-  files_exclude = setunion([for f in local.path_exclude : fileset(local.source_path, f)]...)
-  files         = sort(setsubtract(local.files_include, local.files_exclude))
-
-  dir_sha = sha1(join("", [for f in local.files : filesha1("${local.source_path}/${f}")]))
+  source_path = ".."
+  paths       = ["packages/scout-agent/src/**", "packages/scout-webapp/src/**"]
+  files       = setunion([for f in local.paths : fileset(local.source_path, f)]...)
+  dir_sha     = sha1(join("", [for f in local.files : filesha1("${local.source_path}/${f}")]))
 
   container_name = "scout-webapp"
   container_port = 3000
@@ -50,102 +46,6 @@ module "ecs_cluster" {
       base   = 1
     }
   }
-}
-
-module "ecs_service" {
-  source                 = "terraform-aws-modules/ecs/aws//modules/service"
-  name                   = var.name
-  cluster_arn            = module.ecs_cluster.arn
-  enable_execute_command = true
-  subnet_ids             = module.vpc.public_subnets
-  tags                   = var.tags
-
-  cpu              = 1024
-  memory           = 2048
-  assign_public_ip = true
-
-  container_definitions = {
-    (local.container_name) = {
-      essential              = true
-      image                  = module.docker_build.image_uri
-      readonlyRootFilesystem = false
-
-      portMappings = [
-        {
-          name          = local.container_name
-          containerPort = local.container_port
-          hostPort      = local.container_port
-          protocol      = "tcp"
-        }
-      ]
-      environment = [
-        // Langfuse
-        {
-          name  = "LANGFUSE_SECRET_KEY"
-          value = var.langfuse_secret_key
-        },
-        {
-          name  = "LANGFUSE_PUBLIC_KEY"
-          value = var.langfuse_public_key
-        },
-        {
-          name  = "LANGFUSE_BASEURL"
-          value = var.langfuse_baseurl
-        },
-      ]
-    }
-  }
-
-  load_balancer = {
-    service = {
-      target_group_arn = module.alb.target_groups["ex_ecs"].arn
-      container_name   = local.container_name
-      container_port   = local.container_port
-    }
-  }
-
-  security_group_ingress_rules = {
-    alb_container_port = {
-      from_port                    = local.container_port
-      ip_protocol                  = "tcp"
-      referenced_security_group_id = module.alb.security_group_id
-    }
-  }
-  security_group_egress_rules = {
-    all = {
-      ip_protocol = "-1"
-      cidr_ipv4   = "0.0.0.0/0"
-    }
-  }
-
-  tasks_iam_role_name = "${var.name}-iam-role"
-  tasks_iam_role_statements = [
-    {
-      actions = [
-        "bedrock:InvokeModel",
-        "bedrock:InvokeModelWithResponseStream"
-      ]
-      resources = ["*"]
-    },
-    {
-      actions = [
-        # https://mastra.ai/en/reference/storage/dynamodb
-        "dynamodb:*",
-        "dynamodb:GetItem",
-        "dynamodb:PutItem",
-        "dynamodb:UpdateItem",
-        "dynamodb:DeleteItem",
-        "dynamodb:Query",
-        "dynamodb:Scan",
-        "dynamodb:BatchGetItem",
-        "dynamodb:BatchWriteItem"
-      ]
-      resources = [
-        module.mastra_storage.dynamodb_table_arn,
-        "${module.mastra_storage.dynamodb_table_arn}/index/*"
-      ]
-    }
-  ]
 }
 
 module "alb" {
@@ -204,25 +104,92 @@ module "alb" {
   }
 }
 
-module "cdn" {
-  source = "terraform-aws-modules/cloudfront/aws"
+module "ecs_service" {
+  source                 = "terraform-aws-modules/ecs/aws//modules/service"
+  name                   = var.name
+  cluster_arn            = module.ecs_cluster.arn
+  enable_execute_command = true
+  subnet_ids             = module.vpc.public_subnets
+  tags                   = var.tags
 
-  price_class = "PriceClass_All"
+  cpu              = 1024
+  memory           = 2048
+  assign_public_ip = true
 
-  origin = {
-    alb_origin = {
-      domain_name = module.alb.lb_dns_name
-      custom_origin_config = {
-        origin_protocol_policy = "http-only"
-        http_port              = 80
-      }
+  container_definitions = {
+    (local.container_name) = {
+      essential              = true
+      image                  = module.docker_build.image_uri
+      readonlyRootFilesystem = false
+
+      portMappings = [
+        {
+          name          = local.container_name
+          containerPort = local.container_port
+          hostPort      = local.container_port
+          protocol      = "tcp"
+        }
+      ]
     }
   }
 
-  default_cache_behavior = {
-    target_origin_id       = "alb_origin"
-    viewer_protocol_policy = "redirect-to-https"
+  load_balancer = {
+    service = {
+      target_group_arn = module.alb.target_groups["ex_ecs"].arn
+      container_name   = local.container_name
+      container_port   = local.container_port
+    }
   }
+
+  security_group_ingress_rules = {
+    alb_container_port = {
+      from_port                    = local.container_port
+      ip_protocol                  = "tcp"
+      referenced_security_group_id = module.alb.security_group_id
+    }
+  }
+  security_group_egress_rules = {
+    all = {
+      ip_protocol = "-1"
+      cidr_ipv4   = "0.0.0.0/0"
+    }
+  }
+
+  tasks_iam_role_name = "${var.name}-iam-role"
+  tasks_iam_role_statements = [
+    {
+      actions = [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream",
+      ]
+      resources = ["*"]
+    },
+    {
+      actions = [
+        "bedrock-agentcore:StartBrowserSession",
+        "bedrock-agentcore:GetBrowserSession"
+      ]
+      resources = ["*"]
+    },
+    {
+      actions = [
+        # https://mastra.ai/en/reference/storage/dynamodb
+        "dynamodb:*",
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Query",
+        "dynamodb:Scan",
+        "dynamodb:BatchGetItem",
+        "dynamodb:BatchWriteItem"
+      ]
+      resources = [
+        module.mastra_storage.dynamodb_table_arn,
+        "${module.mastra_storage.dynamodb_table_arn}/index/*"
+      ]
+    }
+  ]
 }
 
 module "docker_build" {

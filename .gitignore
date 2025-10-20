@@ -1,4 +1,7 @@
 packages/scout-agent/.mastra/
+terraform/.terraform/
+terraform/*lock*
+terraform/*tfstate*
 *.db
 *.db-shm
 *.db-wal

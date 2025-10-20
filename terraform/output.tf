@@ -1,5 +1,5 @@
-output "alb_dns_name" {
-  value = module.alb.dns_name
+output "cdn_domain_name" {
+  value = module.cdn.cloudfront_distribution_domain_name
 }
 
 output "mastra_dynamodb_table_name" {
