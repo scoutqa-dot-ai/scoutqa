@@ -18,5 +18,6 @@ export interface BrowserSession {
   readonly provider: BrowserProvider;
   readonly sessionId: string;
   readonly viewport: BrowserViewport;
+  generateLiveViewUrl(): Promise<string>;
   generateWsEndpointAndHeaders(): Promise<BrowserWsEndpointAndHeaders>;
 }

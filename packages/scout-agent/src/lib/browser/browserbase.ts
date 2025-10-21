@@ -20,6 +20,11 @@ class BrowserbaseSession implements BrowserSession {
     return this.session.id;
   }
 
+  async generateLiveViewUrl() {
+    const liveViewLinks = await bb.sessions.debug(this.session.id);
+    return liveViewLinks.debuggerFullscreenUrl;
+  }
+
   async generateWsEndpointAndHeaders(): Promise<BrowserWsEndpointAndHeaders> {
     return { endpoint: this.session.connectUrl! };
   }

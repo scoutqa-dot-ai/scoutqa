@@ -31,6 +31,59 @@ class AgentCoreBrowserSession implements BrowserSession {
     private readonly streams: BrowserSessionStream | undefined
   ) {}
 
+  async generateLiveViewUrl({
+    expiresInSeconds = 300,
+  }: {
+    expiresInSeconds?: number;
+  } = {}) {
+    const { liveViewStream } = this.streams ?? {};
+    if (typeof liveViewStream === "undefined") {
+      throw new Error("AgentCore Browser live view stream is not enabled");
+    }
+
+    const presignedUrl = new URL(liveViewStream.streamEndpoint!);
+    const request = new HttpRequest({
+      method: "GET",
+      protocol: presignedUrl.protocol,
+      hostname: presignedUrl.hostname,
+      path: presignedUrl.pathname,
+      headers: {
+        host: presignedUrl.hostname,
+      },
+    });
+
+    const credentials = await getAwsCredentialIdentity();
+    const signer = new SignatureV4({
+      credentials,
+      region: client.config.region,
+      service: "bedrock-agentcore",
+      sha256: Sha256,
+      applyChecksum: false,
+    });
+    const signedRequest = await signer.presign(request, {
+      expiresIn: expiresInSeconds,
+    });
+
+    for (const [key, value] of Object.entries(signedRequest.query || {})) {
+      if (typeof value === "string") {
+        presignedUrl.searchParams.append(key, value);
+      }
+    }
+
+    // https://github.com/scoutqa-dot-ai/dcv-viewer/blob/7234313/src/index.html#L44
+    const viewerPayload = {
+      presignedUrl: presignedUrl.toString(),
+      width: this.viewport.width,
+      height: this.viewport.height,
+    };
+
+    const base64EncodedPayload = Buffer.from(
+      JSON.stringify(viewerPayload)
+    ).toString("base64");
+
+    return `https://scoutqa-dot-ai.github.io/dcv-viewer/#${base64EncodedPayload}`;
+  }
+
   async generateWsEndpointAndHeaders() {
     const { automationStream } = this.streams ?? {};
     if (

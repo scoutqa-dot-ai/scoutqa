@@ -60,6 +60,7 @@ export async function buildManualTesterAgent(ctx: BuildManualTesterAgentInput) {
   manualTesterAgent.__registerPrimitives(ctx.mastra!);
 
   return {
+    browserSession,
     manualTesterAgent,
     destroy: () => client.disconnect(),
   };

@@ -7,8 +7,11 @@ export const RESOURCE_ID_THREAD_PREFIX = "thread:";
 export const THREAD_ID_WORKING_MEMORY_SUFFIX = "/working-memory";
 export const TOOL_ID_EXECUTE_TEST_SCENARIO = "execute-test-scenario";
 
+export const RUNTIME_CONTEXT_KEY_BROWSER_LIVE_VIEW_URL_PREFIX =
+  "browserLiveViewUrl:";
 export const RUNTIME_CONTEXT_KEY_BROWSER_SESSION_PREFIX = "browser:";
 export const RUNTIME_CONTEXT_KEY_WORKING_MEMORY_PREFIX = "working-memory:";
 
 export const AG_UI_TOOL_NAME_TOOL_CALL = "tool-call";
 export const AG_UI_TOOL_NAME_TOOL_RESULT = "tool-result";
+export const AG_UI_TOOL_NAME_GENERATE_LIVE_VIEW_URL = "generate-live-view-url";

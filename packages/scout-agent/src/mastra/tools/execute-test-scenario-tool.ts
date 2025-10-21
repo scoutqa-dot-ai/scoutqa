@@ -1,6 +1,10 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { TOOL_ID_EXECUTE_TEST_SCENARIO } from "../../config/constants";
+import {
+  generateLiveViewUrlIfHaveNot,
+  startOrGetBrowserSession,
+} from "../../lib/browser";
 import { buildManualTesterAgent } from "../agents/manual-tester-agent";
 
 export const executeTestScenarioTool = createTool({
@@ -14,7 +18,10 @@ export const executeTestScenarioTool = createTool({
     result: z.string(),
   }),
   execute: async (ctx, opts) => {
-    const { manualTesterAgent, destroy } = await buildManualTesterAgent(ctx);
+    const { browserSession, manualTesterAgent, destroy } =
+      await buildManualTesterAgent(ctx);
+
+    await generateLiveViewUrlIfHaveNot({ ...ctx, browserSession });
 
     try {
       const streamOutput = await manualTesterAgent.stream(

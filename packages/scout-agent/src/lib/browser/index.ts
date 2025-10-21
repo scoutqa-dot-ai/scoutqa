@@ -1,5 +1,11 @@
+import { randomUUID } from "node:crypto";
+import { RuntimeContext } from "@mastra/core/runtime-context";
+import { ChunkFrom, ChunkType } from "@mastra/core/stream";
+import { ToolStream } from "@mastra/core/tools";
 import {
+  AG_UI_TOOL_NAME_GENERATE_LIVE_VIEW_URL,
   BROWSER_SESSION_NAME_PREFIX,
+  RUNTIME_CONTEXT_KEY_BROWSER_LIVE_VIEW_URL_PREFIX,
   RUNTIME_CONTEXT_KEY_BROWSER_SESSION_PREFIX,
 } from "../../config/constants";
 import { getWorkingMemory, GetWorkingMemoryInput } from "../working-memory";
@@ -59,6 +65,52 @@ export async function startOrGetBrowserSession(
   runtimeContext.set(newKey, newSession);
   logger.debug("Started new browser session", newBrowser);
   return newSession;
+}
+
+interface GenerateLiveViewUrlIfHaveNotInput {
+  browserSession: BrowserSession;
+  runId?: string;
+  runtimeContext: RuntimeContext;
+  writer?: ToolStream<unknown>;
+}
+
+export async function generateLiveViewUrlIfHaveNot({
+  browserSession,
+  runId,
+  runtimeContext,
+  writer,
+}: GenerateLiveViewUrlIfHaveNotInput) {
+  const { provider, sessionId } = browserSession;
+  const key = `${RUNTIME_CONTEXT_KEY_BROWSER_LIVE_VIEW_URL_PREFIX}${sessionId}`;
+  if (
+    runtimeContext.has(key) ||
+    typeof runId === "undefined" ||
+    typeof writer === "undefined"
+  ) {
+    return;
+  }
+
+  const liveViewUrl = await browserSession.generateLiveViewUrl();
+  runtimeContext.set(key, liveViewUrl);
+
+  const toolCallId = randomUUID();
+  const toolName = AG_UI_TOOL_NAME_GENERATE_LIVE_VIEW_URL;
+  await writer.write({
+    type: "tool-call",
+    from: ChunkFrom.AGENT,
+    runId,
+    payload: { toolCallId, toolName, args: {} },
+  } satisfies ChunkType);
+  await writer.write({
+    type: "tool-result",
+    from: ChunkFrom.AGENT,
+    runId,
+    payload: {
+      toolCallId,
+      toolName,
+      result: { liveViewUrl, provider, sessionId },
+    },
+  } satisfies ChunkType);
 }
 
 export type { BrowserSession } from "./browser-session";

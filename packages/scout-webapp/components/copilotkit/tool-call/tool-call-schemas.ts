@@ -1,4 +1,7 @@
-import { TOOL_ID_EXECUTE_TEST_SCENARIO } from "@scoutqa-dot-ai/scout-agent/src/config/constants";
+import {
+  AG_UI_TOOL_NAME_GENERATE_LIVE_VIEW_URL,
+  TOOL_ID_EXECUTE_TEST_SCENARIO,
+} from "@scoutqa-dot-ai/scout-agent/src/config/constants";
 import { z } from "zod/mini";
 
 export const toolCallSchema = z.object({
@@ -69,6 +72,11 @@ export const knownToolSchema = z.discriminatedUnion("toolName", [
 export type KnownTool = z.infer<typeof knownToolSchema>;
 
 export const knownResultSchema = z.union([
+  z.object({
+    // AG_UI_TOOL_NAME_GENERATE_LIVE_VIEW_URL
+    liveViewUrl: z.string(),
+    sessionId: z.string(),
+  }),
   z.object({
     // {"toolCallId":"tooluse_egZ-HXRnSjmPDM4VyaRISg","toolName":"browser_browser_console_messages","result":{"error":true,"message":"Tool validation failed for browser_browser_console_messages. Please fix the following errors and try again:\n- root: Invalid input: expected object, received undefined\n\nProvided arguments: undefined","validationErrors":{"_errors":["Invalid input: expected object, received undefined"]}},"parentToolCallId":"tooluse_COtjRhIASEuqvAT3H76qog"}
     error: z.literal(true),

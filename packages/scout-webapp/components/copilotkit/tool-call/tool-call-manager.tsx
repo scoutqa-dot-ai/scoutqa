@@ -1,4 +1,6 @@
-import { createContext } from "react";
+import { AG_UI_TOOL_NAME_GENERATE_LIVE_VIEW_URL } from "@scoutqa-dot-ai/scout-agent/src/config/constants";
+import { createContext, Dispatch, SetStateAction } from "react";
+import { LiveViewContextValue } from "./live-view-context";
 import {
   knownResultSchema,
   KnownTool,
@@ -21,6 +23,10 @@ export interface Tool extends ToolCall {
 
 export class ToolCallManager {
   private tools = new Map<string, Tool>();
+
+  constructor(
+    private setLiveViewUrl?: Dispatch<SetStateAction<LiveViewContextValue>>
+  ) {}
 
   registerToolCall(toolCall: ToolCall) {
     const { toolCallId, toolName, args, parentToolCallId } = toolCall;
@@ -79,6 +85,14 @@ export class ToolCallManager {
     const knownResult = knownResultSchema.safeParse(toolResult.result);
     if (knownResult.success) {
       const r = knownResult.data;
+
+      if (
+        tool.toolName === AG_UI_TOOL_NAME_GENERATE_LIVE_VIEW_URL &&
+        "liveViewUrl" in r
+      ) {
+        this.setLiveViewUrl?.(r);
+      }
+
       if ("error" in r) {
         tool.result = { type: "failed", error: r.message };
       } else if ("isError" in r && r.content.length === 1) {

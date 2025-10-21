@@ -7,6 +7,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { LiveViewContext, LiveViewContextValue } from "./live-view-context";
 import {
   Listener,
   ToolCallManager,
@@ -16,15 +17,18 @@ import { ToolCallItem } from "./tool-call-item";
 import { toolCallSchema, toolResultSchema } from "./tool-call-schemas";
 
 export const ToolCallManagerProvider = ({ children }: PropsWithChildren) => {
-  const [tcm] = useState(() => new ToolCallManager());
+  const [liveViewUrl, setLiveViewUrl] = useState<LiveViewContextValue>({});
+  const [tcm] = useState(() => new ToolCallManager(setLiveViewUrl));
   return (
     <ToolCallManagerContext.Provider value={tcm}>
-      {children}
+      <LiveViewContext.Provider value={liveViewUrl}>
+        {children}
+      </LiveViewContext.Provider>
     </ToolCallManagerContext.Provider>
   );
 };
 
-export function useToolCallManager() {
+function useToolCallManager() {
   return useContext(ToolCallManagerContext);
 }
 
@@ -72,3 +76,5 @@ export const ToolResult = ({ json }: { json: string }) => {
   }, [manager, toolResult]);
   return null;
 };
+
+export { LiveViewIframe } from "./live-view-iframe";
