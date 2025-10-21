@@ -15,8 +15,8 @@ import type {
 } from "@ag-ui/client";
 import type { ChunkType } from "@mastra/core";
 import {
-  AG_UI_TOOL_NAME_TOOL_CALL,
-  AG_UI_TOOL_NAME_TOOL_RESULT,
+  AG_UI_TOOL_CALL_ARGS_KEY_ARGS,
+  AG_UI_TOOL_CALL_ARGS_KEY_PARENT_TOOL_CALL_ID,
 } from "@scoutqa-dot-ai/scout-agent/src/config/constants";
 import type { Subscriber } from "rxjs";
 
@@ -71,14 +71,31 @@ export class Publisher {
         break;
       }
 
-      case "tool-call":
-        this.publishToolEvents({
-          toolCallId: randomUUID(),
-          toolName: AG_UI_TOOL_NAME_TOOL_CALL,
-          args: { ...chunk.payload, parentToolCallId },
-          result: false,
-        });
+      case "tool-call": {
+        const { toolCallId, toolName, args } = chunk.payload;
+        const startEvent: ToolCallStartEvent = {
+          type: EventType.TOOL_CALL_START,
+          parentMessageId: this.messageId,
+          toolCallId,
+          toolCallName: toolName,
+        };
+        this.publish(startEvent);
+        const argsEvent: ToolCallArgsEvent = {
+          type: EventType.TOOL_CALL_ARGS,
+          toolCallId,
+          delta: JSON.stringify({
+            [AG_UI_TOOL_CALL_ARGS_KEY_ARGS]: args,
+            [AG_UI_TOOL_CALL_ARGS_KEY_PARENT_TOOL_CALL_ID]: parentToolCallId,
+          }),
+        };
+        this.publish(argsEvent);
+        const endEvent: ToolCallEndEvent = {
+          type: EventType.TOOL_CALL_END,
+          toolCallId,
+        };
+        this.publish(endEvent);
         break;
+      }
 
       case "tool-output":
         const nestedChunk = chunk.payload.output as ChunkType;
@@ -89,60 +106,23 @@ export class Publisher {
         }
         break;
 
-      case "tool-result":
-        this.publishToolEvents({
-          toolCallId: randomUUID(),
-          toolName: AG_UI_TOOL_NAME_TOOL_RESULT,
-          args: false,
-          result: { ...chunk.payload, parentToolCallId },
-        });
+      case "tool-result": {
+        const { toolCallId, result } = chunk.payload;
+        const toolCallResultEvent: ToolCallResultEvent = {
+          type: EventType.TOOL_CALL_RESULT,
+          toolCallId,
+          content: JSON.stringify(result),
+          messageId: randomUUID(),
+          role: "tool",
+        };
+        this.publish(toolCallResultEvent);
         break;
+      }
 
       case "finish":
         this.messageId = randomUUID();
         break;
     }
-  }
-
-  publishToolEvents({
-    toolCallId,
-    toolName: toolCallName,
-    args,
-    result,
-  }: {
-    toolCallId: string;
-    toolName: string;
-    args: unknown;
-    result: unknown;
-  }) {
-    // AG-UI doesn't handle nested tool output yet
-    // so we have to split a tool call into two separate ones
-    const startEvent: ToolCallStartEvent = {
-      type: EventType.TOOL_CALL_START,
-      parentMessageId: this.messageId,
-      toolCallId,
-      toolCallName,
-    };
-    this.publish(startEvent);
-    const argsEvent: ToolCallArgsEvent = {
-      type: EventType.TOOL_CALL_ARGS,
-      toolCallId,
-      delta: JSON.stringify(args),
-    };
-    this.publish(argsEvent);
-    const endEvent: ToolCallEndEvent = {
-      type: EventType.TOOL_CALL_END,
-      toolCallId,
-    };
-    this.publish(endEvent);
-    const toolCallResultEvent: ToolCallResultEvent = {
-      type: EventType.TOOL_CALL_RESULT,
-      toolCallId,
-      content: JSON.stringify(result),
-      messageId: randomUUID(),
-      role: "tool",
-    };
-    this.publish(toolCallResultEvent);
   }
 
   publishRunFinshedEvent() {

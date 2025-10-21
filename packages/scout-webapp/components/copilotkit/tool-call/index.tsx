@@ -1,4 +1,8 @@
 import {
+  AG_UI_TOOL_CALL_ARGS_KEY_ARGS,
+  AG_UI_TOOL_CALL_ARGS_KEY_PARENT_TOOL_CALL_ID,
+} from "@scoutqa-dot-ai/scout-agent/src/config/constants";
+import {
   PropsWithChildren,
   useCallback,
   useContext,
@@ -10,11 +14,12 @@ import {
 import { LiveViewContext, LiveViewContextValue } from "./live-view-context";
 import {
   Listener,
+  ToolCall as ToolCallType,
   ToolCallManager,
   ToolCallManagerContext,
+  ToolResult as ToolResultType,
 } from "./tool-call-manager";
 import { ToolCallItem } from "./tool-call-item";
-import { toolCallSchema, toolResultSchema } from "./tool-call-schemas";
 
 export const ToolCallManagerProvider = ({ children }: PropsWithChildren) => {
   const [liveViewUrl, setLiveViewUrl] = useState<LiveViewContextValue>({});
@@ -32,14 +37,37 @@ function useToolCallManager() {
   return useContext(ToolCallManagerContext);
 }
 
-export const ToolCall = ({ json }: { json: string }) => {
-  const toolCall = useMemo(() => {
+export const ToolCall = ({
+  id: toolCallId,
+  functionName,
+  functionArguments,
+}: {
+  id: string;
+  functionName: string;
+  functionArguments: string;
+}) => {
+  const toolCall = useMemo<ToolCallType>(() => {
+    let args = {};
+    let parentToolCallId: string | undefined;
     try {
-      return toolCallSchema.parse(JSON.parse(json));
+      const parsed = JSON.parse(functionArguments);
+      if (parsed[AG_UI_TOOL_CALL_ARGS_KEY_ARGS]) {
+        args = parsed[AG_UI_TOOL_CALL_ARGS_KEY_ARGS];
+      }
+      if (parsed[AG_UI_TOOL_CALL_ARGS_KEY_PARENT_TOOL_CALL_ID]) {
+        parentToolCallId = parsed[AG_UI_TOOL_CALL_ARGS_KEY_PARENT_TOOL_CALL_ID];
+      }
     } catch {
-      return null;
+      // ignore
     }
-  }, [json]);
+
+    return {
+      toolCallId,
+      toolName: functionName,
+      args,
+      parentToolCallId,
+    };
+  }, [toolCallId, functionName, functionArguments]);
   const manager = useToolCallManager();
   useEffect(() => {
     if (toolCall) {
@@ -60,14 +88,23 @@ export const ToolCall = ({ json }: { json: string }) => {
   return <ToolCallItem tool={tool} />;
 };
 
-export const ToolResult = ({ json }: { json: string }) => {
-  const toolResult = useMemo(() => {
+export const ToolResult = ({
+  toolCallId,
+  content,
+}: {
+  toolCallId: string;
+  content: string;
+}) => {
+  const toolResult = useMemo<ToolResultType>(() => {
+    let result = {};
     try {
-      return toolResultSchema.parse(JSON.parse(json));
+      result = JSON.parse(content);
     } catch {
-      return undefined;
+      // ignore
     }
-  }, [json]);
+
+    return { toolCallId, result };
+  }, [toolCallId, content]);
   const manager = useToolCallManager();
   useEffect(() => {
     if (typeof toolResult !== "undefined") {

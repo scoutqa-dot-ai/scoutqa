@@ -5,11 +5,21 @@ import {
   knownResultSchema,
   KnownTool,
   knownToolSchema,
-  ToolCall,
-  ToolResult,
 } from "./tool-call-schemas";
 
 export type Listener = () => void;
+
+export interface ToolCall {
+  toolCallId: string;
+  toolName: string;
+  args: unknown;
+  parentToolCallId?: string;
+}
+
+export interface ToolResult {
+  toolCallId: string;
+  result: unknown;
+}
 
 export interface Tool extends ToolCall {
   knownTool?: KnownTool;
@@ -72,14 +82,6 @@ export class ToolCallManager {
     const { toolCallId } = toolResult;
     const tool = this.tools.get(toolCallId);
     if (!tool) return;
-
-    if (toolResult.args) {
-      tool.args = toolResult.args;
-      const knownTool = knownToolSchema.safeParse(tool);
-      if (knownTool.success) {
-        tool.knownTool = knownTool.data;
-      }
-    }
 
     tool.result = { type: "completed", data: toolResult.result };
     const knownResult = knownResultSchema.safeParse(toolResult.result);

@@ -4,10 +4,6 @@ import {
   RenderMessageProps,
   UserMessage as DefaultUserMessage,
 } from "@copilotkit/react-ui";
-import {
-  AG_UI_TOOL_NAME_TOOL_CALL,
-  AG_UI_TOOL_NAME_TOOL_RESULT,
-} from "@scoutqa-dot-ai/scout-agent/src/config/constants";
 import { ToolCall, ToolResult } from "./tool-call";
 
 export const RenderMessage = ({
@@ -42,8 +38,15 @@ export const RenderMessage = ({
       const { toolCalls } = message;
       if (Array.isArray(toolCalls) && toolCalls.length > 0) {
         const toolElements = toolCalls
-          .filter((t) => t.function.name === AG_UI_TOOL_NAME_TOOL_CALL)
-          .map((t) => <ToolCall key={t.id} json={t.function.arguments} />);
+          .filter((t) => t.function.arguments !== "{}")
+          .map((t) => (
+            <ToolCall
+              key={t.id}
+              id={t.id}
+              functionName={t.function.name}
+              functionArguments={t.function.arguments}
+            />
+          ));
         if (toolElements.length > 0) {
           return toolElements;
         }
@@ -74,11 +77,9 @@ export const RenderMessage = ({
         />
       );
     case "tool":
-      if (message.toolName === AG_UI_TOOL_NAME_TOOL_RESULT) {
-        return <ToolResult json={message.content} />;
-      } else {
-        return null;
-      }
+      return (
+        <ToolResult toolCallId={message.toolCallId} content={message.content} />
+      );
     case "developer":
     case "system":
       // intentionally left empty

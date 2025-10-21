@@ -12,6 +12,6 @@ export const RUNTIME_CONTEXT_KEY_BROWSER_LIVE_VIEW_URL_PREFIX =
 export const RUNTIME_CONTEXT_KEY_BROWSER_SESSION_PREFIX = "browser:";
 export const RUNTIME_CONTEXT_KEY_WORKING_MEMORY_PREFIX = "working-memory:";
 
-export const AG_UI_TOOL_NAME_TOOL_CALL = "tool-call";
-export const AG_UI_TOOL_NAME_TOOL_RESULT = "tool-result";
+export const AG_UI_TOOL_CALL_ARGS_KEY_ARGS = "args";
+export const AG_UI_TOOL_CALL_ARGS_KEY_PARENT_TOOL_CALL_ID = "parentToolCallId";
 export const AG_UI_TOOL_NAME_GENERATE_LIVE_VIEW_URL = "generate-live-view-url";
