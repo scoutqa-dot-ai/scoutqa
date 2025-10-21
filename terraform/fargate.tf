@@ -168,15 +168,18 @@ module "ecs_service" {
     },
     {
       actions = [
+        // https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-onboarding.html
         "bedrock-agentcore:StartBrowserSession",
-        "bedrock-agentcore:GetBrowserSession"
+        "bedrock-agentcore:GetBrowserSession",
+        "bedrock-agentcore:ConnectBrowserAutomationStream",
+        "bedrock-agentcore:ConnectBrowserLiveViewStream"
       ]
       resources = ["*"]
     },
     {
       actions = [
         # https://mastra.ai/en/reference/storage/dynamodb
-        "dynamodb:*",
+        "dynamodb:DescribeTable",
         "dynamodb:GetItem",
         "dynamodb:PutItem",
         "dynamodb:UpdateItem",
