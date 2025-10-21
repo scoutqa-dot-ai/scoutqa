@@ -23,6 +23,7 @@ import type { Subscriber } from "rxjs";
 export class Publisher {
   private messageId = randomUUID();
   private debugWriteEventsJson: boolean;
+  private pendingToolChunks: ChunkType[] = [];
   private threadId: string;
   private runId: string;
 
@@ -58,6 +59,10 @@ export class Publisher {
   }
 
   publishChunk(chunk: ChunkType, parentToolCallId?: string) {
+    if (chunk.type.startsWith("tool-")) {
+      this.drainPendingToolChunks();
+    }
+
     // adapted from https://github.com/ag-ui-protocol/ag-ui/blob/59d980a/integrations/mastra/typescript/src/mastra.ts
     switch (chunk.type) {
       case "text-delta": {
@@ -84,7 +89,7 @@ export class Publisher {
           type: EventType.TOOL_CALL_ARGS,
           toolCallId,
           delta: JSON.stringify({
-            [AG_UI_TOOL_CALL_ARGS_KEY_ARGS]: args,
+            [AG_UI_TOOL_CALL_ARGS_KEY_ARGS]: args ?? {},
             [AG_UI_TOOL_CALL_ARGS_KEY_PARENT_TOOL_CALL_ID]: parentToolCallId,
           }),
         };
@@ -132,5 +137,20 @@ export class Publisher {
       runId: this.runId,
     };
     this.subscriber.next(runFinishedEvent);
+  }
+
+  enqueueToolChunk(chunk: ChunkType) {
+    // this chunk must wait for the next tool chunk to publish
+    // otherwise it will insert line break in the middle of some text, which is no good
+    this.pendingToolChunks.push(chunk);
+  }
+
+  private drainPendingToolChunks() {
+    if (this.pendingToolChunks.length === 0) return;
+    const chunks = [...this.pendingToolChunks];
+    this.pendingToolChunks.length = 0;
+    for (const chunk of chunks) {
+      this.publishChunk(chunk);
+    }
   }
 }

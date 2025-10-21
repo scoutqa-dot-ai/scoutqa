@@ -1,11 +1,17 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { AbstractAgent } from "@ag-ui/client";
 import type { BaseEvent, RunAgentInput } from "@ag-ui/client";
 import { convertAGUIMessagesToMastra } from "@ag-ui/mastra";
 import type { Agent } from "@mastra/core/agent";
 import { RuntimeContext } from "@mastra/core/runtime-context";
+import { ChunkFrom } from "@mastra/core/stream";
+import {
+  AG_UI_TOOL_NAME_GENERATE_LIVE_VIEW_URL,
+  RUNTIME_CONTEXT_KEY_THREAD_ID,
+} from "@scoutqa-dot-ai/scout-agent/src/config/constants";
 import { startOrGetBrowserSession } from "@scoutqa-dot-ai/scout-agent/src/lib/browser";
 import { Observable } from "rxjs";
 import { Publisher } from "./publisher";
@@ -41,6 +47,7 @@ export class MastraAgent extends AbstractAgent {
           const threadId = input.threadId;
           const runId = input.runId;
           const runtimeContext = new RuntimeContext();
+          runtimeContext.set(RUNTIME_CONTEXT_KEY_THREAD_ID, threadId);
 
           const convertedMessages = convertAGUIMessagesToMastra([
             // only take the LAST message from incoming payload
@@ -69,13 +76,38 @@ export class MastraAgent extends AbstractAgent {
           }
 
           // optimization: setup browser as soon as possible
-          startOrGetBrowserSession({
+          const ctx = {
             mastra: agent.getMastraInstance(),
             runtimeContext,
-            threadId,
-          }).catch(() => {});
-
+          };
           const publisher = new Publisher(subscriber, { threadId, runId });
+          startOrGetBrowserSession(ctx)
+            .then(async (session) => {
+              const liveViewUrl = await session.generateLiveViewUrl();
+              return {
+                liveViewUrl,
+                provider: session.provider,
+                sessionId: session.sessionId,
+              };
+            })
+            .then((result) => {
+              const toolCallId = randomUUID();
+              const toolName = AG_UI_TOOL_NAME_GENERATE_LIVE_VIEW_URL;
+              publisher.enqueueToolChunk({
+                type: "tool-call",
+                from: ChunkFrom.AGENT,
+                runId,
+                payload: { toolCallId, toolName },
+              });
+              publisher.enqueueToolChunk({
+                type: "tool-result",
+                from: ChunkFrom.AGENT,
+                runId,
+                payload: { toolCallId, toolName, result },
+              });
+            })
+            .catch(() => {});
+
           const streamOutput = await agent.stream([message], {
             abortSignal: abortController.signal,
             maxSteps: 20,

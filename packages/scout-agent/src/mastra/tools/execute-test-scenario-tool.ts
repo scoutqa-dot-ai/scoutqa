@@ -1,8 +1,10 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
-import { TOOL_ID_EXECUTE_TEST_SCENARIO } from "../../config/constants";
-import { generateLiveViewUrlIfHaveNot } from "../../lib/browser";
-import { buildManualTesterAgent } from "../agents/manual-tester-agent";
+import {
+  AGENT_ID_MANUAL_TESTER_AGENT,
+  TOOL_ID_EXECUTE_TEST_SCENARIO,
+} from "../../config/constants";
+import { getHouseKeeper } from "../../lib/mastra/context";
 
 export const executeTestScenarioTool = createTool({
   id: TOOL_ID_EXECUTE_TEST_SCENARIO,
@@ -15,10 +17,9 @@ export const executeTestScenarioTool = createTool({
     result: z.string(),
   }),
   execute: async (ctx, opts) => {
-    const { browserSession, manualTesterAgent, disconnect } =
-      await buildManualTesterAgent(ctx);
-
-    await generateLiveViewUrlIfHaveNot({ ...ctx, browserSession });
+    const manualTesterAgent = ctx.mastra!.getAgentById(
+      AGENT_ID_MANUAL_TESTER_AGENT
+    );
 
     try {
       const streamOutput = await manualTesterAgent.stream(
@@ -41,9 +42,7 @@ export const executeTestScenarioTool = createTool({
       const result = await streamOutput.text;
       return { result };
     } finally {
-      await disconnect().catch((reason) =>
-        console.error("Could not destroy manual tester agent", reason)
-      );
+      getHouseKeeper(ctx).agentFinished();
     }
   },
 });

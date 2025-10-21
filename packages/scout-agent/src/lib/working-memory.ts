@@ -1,10 +1,9 @@
-import { RuntimeContext } from "@mastra/core/runtime-context";
 import {
   RESOURCE_ID_THREAD_PREFIX,
   RUNTIME_CONTEXT_KEY_WORKING_MEMORY_PREFIX,
   THREAD_ID_WORKING_MEMORY_SUFFIX,
 } from "../config/constants";
-import { MastraContext } from "./mastra/context";
+import { getThreadId, MastraContext } from "./mastra/context";
 
 interface WorkingMemoryValue {
   browser?: {
@@ -18,11 +17,11 @@ export interface WorkingMemory {
   set: (value: WorkingMemoryValue) => Promise<void>;
 }
 
-export async function getWorkingMemory({
-  mastra,
-  runtimeContext,
-  threadId,
-}: MastraContext): Promise<WorkingMemory> {
+export async function getWorkingMemory(
+  ctx: MastraContext
+): Promise<WorkingMemory> {
+  const threadId = getThreadId(ctx);
+  const { mastra, runtimeContext } = ctx;
   const workingMemoryThreadId = `${threadId}${THREAD_ID_WORKING_MEMORY_SUFFIX}`;
   const runtimeContextKey = `${RUNTIME_CONTEXT_KEY_WORKING_MEMORY_PREFIX}${threadId}`;
   const cached = runtimeContext.get<string, WorkingMemory>(runtimeContextKey);
