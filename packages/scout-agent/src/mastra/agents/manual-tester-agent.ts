@@ -1,17 +1,13 @@
 import { existsSync } from "node:fs";
 import { Mastra } from "@mastra/core";
 import { Agent } from "@mastra/core/agent";
-import { MCPClient } from "@mastra/mcp";
 import { SCOUTQA_MANUAL_TESTER_AGENT_MODEL } from "../../config/env";
-import {
-  startOrGetBrowserSession,
-  StartOrGetBrowserSessionInput,
-} from "../../lib/browser";
+import { startOrGetBrowserSession } from "../../lib/browser";
 import { llm } from "../../lib/llm";
+import { MastraContext } from "../../lib/mastra/context";
+import { connectToMcpServer } from "../../lib/mastra/mcp-client";
 
-export type BuildManualTesterAgentInput = StartOrGetBrowserSessionInput;
-
-export async function buildManualTesterAgent(ctx: BuildManualTesterAgentInput) {
+export async function buildManualTesterAgent(ctx: MastraContext) {
   const logger = ctx.mastra!.getLogger();
   const browserSession = await startOrGetBrowserSession(ctx);
   const ws = await browserSession.generateWsEndpointAndHeaders();
@@ -36,16 +32,7 @@ export async function buildManualTesterAgent(ctx: BuildManualTesterAgentInput) {
       .flat()
   );
 
-  const command = args.shift()!;
-  const client = new MCPClient({
-    servers: {
-      browser: { command, args },
-    },
-  });
-  client.__setLogger(logger);
-
-  const tools = await client.getTools();
-
+  const { disconnect, tools } = await connectToMcpServer("browser", args, ctx);
   delete tools["browser_browser_close"]; // each thread only has one browser session
   delete tools["browser_browser_install"]; // for obvious reason...
   delete tools["browser_browser_take_screenshot"]; // avoid exceeding token limit
@@ -62,6 +49,6 @@ export async function buildManualTesterAgent(ctx: BuildManualTesterAgentInput) {
   return {
     browserSession,
     manualTesterAgent,
-    destroy: () => client.disconnect(),
+    disconnect,
   };
 }

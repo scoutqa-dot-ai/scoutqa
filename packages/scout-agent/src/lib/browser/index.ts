@@ -8,15 +8,14 @@ import {
   RUNTIME_CONTEXT_KEY_BROWSER_LIVE_VIEW_URL_PREFIX,
   RUNTIME_CONTEXT_KEY_BROWSER_SESSION_PREFIX,
 } from "../../config/constants";
-import { getWorkingMemory, GetWorkingMemoryInput } from "../working-memory";
+import { MastraContext } from "../mastra/context";
+import { getWorkingMemory } from "../working-memory";
 import * as agentcore from "./agentcore";
 import * as browserbase from "./browserbase";
 import { BrowserSession } from "./browser-session";
 
-export type StartOrGetBrowserSessionInput = GetWorkingMemoryInput;
-
 export async function startOrGetBrowserSession(
-  ctx: StartOrGetBrowserSessionInput
+  ctx: MastraContext
 ): Promise<BrowserSession> {
   const { mastra, runtimeContext } = ctx;
   const logger = mastra!.getLogger();
