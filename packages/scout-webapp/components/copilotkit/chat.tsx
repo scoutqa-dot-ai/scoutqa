@@ -18,8 +18,27 @@ export function Chat() {
         RenderMessage={RenderMessage}
         labels={{
           title: "Scout QA",
-          initial: "Hi there 👋, let's test some website today!",
+          initial: "Hi there 👋, let's test your webapp today!",
         }}
+        suggestions={[
+          {
+            title: "AirBnb",
+            message: "Verify booking flow on airbnb.com",
+          },
+          {
+            title: "Google",
+            message: "Make sure user can see latest weather on google.com",
+          },
+          {
+            title: "Medium",
+            message:
+              "Make sure user can follow links on https://medium.com/blog/32-of-our-favorite-medium-stories-of-2023-1fb10ca34cd8",
+          },
+          {
+            title: "Temu",
+            message: "Testing buying a hoodie on temu.com",
+          },
+        ]}
       />
     </CopilotKit>
   );

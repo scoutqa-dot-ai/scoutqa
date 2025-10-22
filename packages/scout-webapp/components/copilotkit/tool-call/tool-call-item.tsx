@@ -118,7 +118,7 @@ export const ToolCallItem = ({ tool }: { tool: Tool | undefined }) => {
         aria-label={isExpanded ? "Collapse" : "Expand"}
       >
         <div className="flex-1 flex items-center">
-          <span className="font-semibold text-gray-800 whitespace-pre line-clamp-1 flex-1">
+          <span className="font-semibold text-gray-800 whitespace-pre line-clamp-1 text-overflow-ellipsis flex-1">
             {toolName}
           </span>
           {result.type === "in_progress" && (
