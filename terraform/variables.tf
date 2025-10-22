@@ -3,6 +3,11 @@ variable "name" {
   default = "scoutqa"
 }
 
+variable "nova_act_api_key" {
+  type      = string
+  sensitive = true
+}
+
 variable "region" {
   type    = string
   default = "us-east-1"

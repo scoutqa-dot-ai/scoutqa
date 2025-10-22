@@ -130,6 +130,17 @@ module "ecs_service" {
           protocol      = "tcp"
         }
       ]
+
+      environment = [
+        {
+          name  = "MASTRA_DYNAMODB_TABLE_NAME"
+          value = module.mastra_storage.dynamodb_table_id
+        },
+        {
+          name  = "NOVA_ACT_API_KEY"
+          value = var.nova_act_api_key
+        }
+      ]
     }
   }
 

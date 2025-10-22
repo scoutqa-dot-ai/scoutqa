@@ -1,6 +1,6 @@
 export const AWS_AGENT_CORE_BROWSER_IDENTIFIER = "aws.browser.v1";
 export const BROWSER_SESSION_NAME_PREFIX = "thread:";
-export const BROWSER_SESSION_TIMEOUT_SECONDS_DEFAULT = 900;
+export const BROWSER_SESSION_TIMEOUT_SECONDS_DEFAULT = 300;
 
 export const AGENT_ID_TEST_LEAD_AGENT = "test-lead-agent";
 export const AGENT_ID_MANUAL_TESTER_AGENT = "manual-tester-agent";
