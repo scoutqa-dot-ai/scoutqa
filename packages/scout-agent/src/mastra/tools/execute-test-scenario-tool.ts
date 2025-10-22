@@ -18,7 +18,7 @@ export const executeTestScenarioTool = createTool({
   }),
   execute: async (ctx, opts) => {
     const manualTesterAgent = ctx.mastra!.getAgentById(
-      AGENT_ID_MANUAL_TESTER_AGENT
+      AGENT_ID_MANUAL_TESTER_AGENT,
     );
 
     try {
@@ -34,7 +34,7 @@ export const executeTestScenarioTool = createTool({
           maxSteps: 20,
           runId: ctx.runId,
           runtimeContext: ctx.runtimeContext,
-        }
+        },
       );
 
       streamOutput.fullStream.pipeTo(ctx.writer!);

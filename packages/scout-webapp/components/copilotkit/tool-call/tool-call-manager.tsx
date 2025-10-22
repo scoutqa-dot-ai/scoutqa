@@ -35,7 +35,7 @@ export class ToolCallManager {
   private tools = new Map<string, Tool>();
 
   constructor(
-    private setLiveViewUrl?: Dispatch<SetStateAction<LiveViewContextValue>>
+    private setLiveViewUrl?: Dispatch<SetStateAction<LiveViewContextValue>>,
   ) {}
 
   registerToolCall(toolCall: ToolCall) {
@@ -118,5 +118,5 @@ export class ToolCallManager {
 }
 
 export const ToolCallManagerContext = createContext<ToolCallManager>(
-  new ToolCallManager()
+  new ToolCallManager(),
 );

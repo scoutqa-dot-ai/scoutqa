@@ -15,7 +15,7 @@ export interface MastraContext {
 export function getRunId({ runtimeContext }: MastraContext): string {
   const runId =
     runtimeContext.get<string, string | undefined>(
-      RUNTIME_CONTEXT_KEY_RUN_ID
+      RUNTIME_CONTEXT_KEY_RUN_ID,
     ) ?? "";
   if (runId.length === 0) {
     throw new Error("Run ID is not set");
@@ -26,7 +26,7 @@ export function getRunId({ runtimeContext }: MastraContext): string {
 export function getThreadId({ runtimeContext }: MastraContext): string {
   const threadId =
     runtimeContext.get<string, string | undefined>(
-      RUNTIME_CONTEXT_KEY_THREAD_ID
+      RUNTIME_CONTEXT_KEY_THREAD_ID,
     ) ?? "";
   if (threadId.length === 0) {
     throw new Error("Thread ID is not set");
@@ -61,7 +61,7 @@ class HouseKeeper {
 export function getHouseKeeper(ctx: MastraContext): HouseKeeper {
   const { runtimeContext } = ctx;
   const cached = runtimeContext.get<string, HouseKeeper>(
-    RUNTIME_CONTEXT_KEY_HOUSE_KEEPER
+    RUNTIME_CONTEXT_KEY_HOUSE_KEEPER,
   );
   if (cached) {
     return cached;

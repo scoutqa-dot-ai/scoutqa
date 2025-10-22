@@ -1,10 +1,9 @@
 packages/scout-agent/.mastra/
+nova-act-cli/.venv/
+__pycache__
 terraform/.terraform/
 terraform/*lock*
 terraform/*tfstate*
-*.db
-*.db-shm
-*.db-wal
 
 # https://github.com/github/gitignore/blob/fc6ce5d/Node.gitignore
 # Logs

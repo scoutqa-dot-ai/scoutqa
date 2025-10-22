@@ -9,7 +9,7 @@ import * as browserbase from "./browserbase";
 import { BrowserSession } from "./browser-session";
 
 export async function startOrGetBrowserSession(
-  ctx: MastraContext
+  ctx: MastraContext,
 ): Promise<BrowserSession> {
   const { mastra, runtimeContext } = ctx;
   const logger = mastra!.getLogger();

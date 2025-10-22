@@ -19,7 +19,7 @@ import { Publisher } from "./publisher";
 
 async function debugStreamFromEventsJson(
   filePath: string,
-  publisher: Publisher
+  publisher: Publisher,
 ) {
   const lines = readFileSync(filePath, "utf8").split("\n");
   for (const line of lines) {
@@ -71,7 +71,7 @@ export class MastraAgent extends AbstractAgent {
                   debugWriteEventsJson: false,
                   threadId,
                   runId,
-                })
+                }),
               );
               return;
             }

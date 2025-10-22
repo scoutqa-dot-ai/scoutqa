@@ -38,7 +38,7 @@ export class NovaAct {
       prompt: string;
       startingPage: string;
     },
-    writer: ToolStream<any> | undefined
+    writer: ToolStream<any> | undefined,
   ): Promise<NovaActOutput> {
     const logger = this.ctx.mastra!.getLogger();
     const runId = getRunId(this.ctx);
@@ -61,7 +61,7 @@ export class NovaAct {
       "--prompt",
       input.prompt,
       "--starting-page",
-      input.startingPage
+      input.startingPage,
     );
 
     // log early before credentials are added
@@ -180,7 +180,7 @@ export class NovaAct {
       });
 
       child.on("error", (error) =>
-        subscriber.error(new Error("Nova Act failure", { cause: error }))
+        subscriber.error(new Error("Nova Act failure", { cause: error })),
       );
     });
   }

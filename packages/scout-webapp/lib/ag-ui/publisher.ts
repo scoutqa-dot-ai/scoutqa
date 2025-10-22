@@ -33,7 +33,7 @@ export class Publisher {
       debugWriteEventsJson,
       threadId,
       runId,
-    }: { debugWriteEventsJson?: boolean; threadId: string; runId: string }
+    }: { debugWriteEventsJson?: boolean; threadId: string; runId: string },
   ) {
     this.debugWriteEventsJson = debugWriteEventsJson ?? true;
     this.threadId = threadId;

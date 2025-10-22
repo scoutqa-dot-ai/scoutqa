@@ -18,7 +18,7 @@ export interface WorkingMemory {
 }
 
 export async function getWorkingMemory(
-  ctx: MastraContext
+  ctx: MastraContext,
 ): Promise<WorkingMemory> {
   const threadId = getThreadId(ctx);
   const { mastra, runtimeContext } = ctx;

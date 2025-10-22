@@ -8,7 +8,7 @@ import { MastraContext } from "./context";
 export async function connectToMcpServer(
   serverName: string,
   args: string[],
-  ctx: MastraContext
+  ctx: MastraContext,
 ) {
   const logger = ctx.mastra!.getLogger();
 

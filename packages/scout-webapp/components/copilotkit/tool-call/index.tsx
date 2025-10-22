@@ -80,7 +80,7 @@ export const ToolCall = ({
     : (toolCall?.toolCallId ?? "");
   const subscribe = useCallback(
     (cb: Listener) => manager.addToolCallListener(id, cb),
-    [id, manager]
+    [id, manager],
   );
   const getSnapshot = () => manager.getTool(id);
   const tool = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);

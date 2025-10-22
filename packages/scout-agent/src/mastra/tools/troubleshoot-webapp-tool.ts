@@ -13,7 +13,7 @@ export const troubleshootWebappTool = createTool({
     scenario: z
       .string()
       .describe(
-        "The test scenario being executed with step by step progress, status (completed/failed)"
+        "The test scenario being executed with step by step progress, status (completed/failed)",
       ),
     currentPageUrl: z
       .string()
@@ -26,7 +26,7 @@ export const troubleshootWebappTool = createTool({
           "Examples: find sign in button and click it. ",
           "Or: dismiss the cookie consent banner. ",
           "Be specific and don't waste my time.",
-        ].join("")
+        ].join(""),
       ),
   }),
   outputSchema: z.object({

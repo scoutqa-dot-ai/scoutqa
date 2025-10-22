@@ -28,7 +28,7 @@ class AgentCoreBrowserSession implements BrowserSession {
 
   constructor(
     public readonly sessionId: string,
-    private readonly streams: BrowserSessionStream | undefined
+    private readonly streams: BrowserSessionStream | undefined,
   ) {}
 
   async generateLiveViewUrl({
@@ -78,7 +78,7 @@ class AgentCoreBrowserSession implements BrowserSession {
     };
 
     const base64EncodedPayload = Buffer.from(
-      JSON.stringify(viewerPayload)
+      JSON.stringify(viewerPayload),
     ).toString("base64");
 
     return `https://scoutqa-dot-ai.github.io/dcv-viewer/#${base64EncodedPayload}`;
@@ -158,7 +158,7 @@ export async function startBrowserSession({
   const startOutput = await client.send(startCmd);
   return new AgentCoreBrowserSession(
     startOutput.sessionId!,
-    startOutput.streams
+    startOutput.streams,
   );
 }
 

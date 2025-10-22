@@ -42,7 +42,7 @@ export const manualTesterAgent = new Agent({
     args.push(
       ...Object.entries(ws.headers ?? {})
         .map(([k, v]) => ["--cdp-header", `${k}:${v}`])
-        .flat()
+        .flat(),
     );
 
     const client = await connectToMcpServer("browser", args, ctx);
