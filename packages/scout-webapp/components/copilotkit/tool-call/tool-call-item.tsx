@@ -109,37 +109,33 @@ export const ToolCallItem = ({ tool }: { tool: Tool | undefined }) => {
 
   return (
     <div
-      className="border border-gray-300 rounded-sm p-3 mt-2 w-full"
+      className="border border-gray-300 rounded-sm p-3 mt-2 w-full cursor-pointer"
+      onClick={() => setIsExpanded(!isExpanded)}
+      aria-label={isExpanded ? "Collapse" : "Expand"}
       data-id={tool.toolCallId}
     >
-      <div
-        className="cursor-pointer"
-        onClick={() => setIsExpanded(!isExpanded)}
-        aria-label={isExpanded ? "Collapse" : "Expand"}
-      >
-        <div className="flex-1 flex items-center">
-          <span className="font-semibold text-gray-800 whitespace-pre line-clamp-1 text-overflow-ellipsis flex-1">
-            {toolName}
+      <div className="flex-1 flex items-center">
+        <span className="whitespace-pre line-clamp-1 text-ellipsis flex-1">
+          {toolName}
+        </span>
+        {result.type === "in_progress" && (
+          <span className="text-xs text-blue-600 flex-none">In Progress</span>
+        )}
+        {result.type === "completed" && (
+          <span className="text-xs text-green-600 flex-none">Completed</span>
+        )}
+        {result.type === "failed" && (
+          <span
+            className="text-xs text-red-600 flex-none"
+            data-error={
+              process.env["NODE_ENV"] === "development"
+                ? result.error
+                : undefined
+            }
+          >
+            Failed
           </span>
-          {result.type === "in_progress" && (
-            <span className="text-xs text-blue-600 flex-none">In Progress</span>
-          )}
-          {result.type === "completed" && (
-            <span className="text-xs text-green-600 flex-none">Completed</span>
-          )}
-          {result.type === "failed" && (
-            <span
-              className="text-xs text-red-600 flex-none"
-              data-error={
-                process.env["NODE_ENV"] === "development"
-                  ? result.error
-                  : undefined
-              }
-            >
-              Failed
-            </span>
-          )}
-        </div>
+        )}
       </div>
 
       {!isExpanded &&
