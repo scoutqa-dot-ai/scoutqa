@@ -10,6 +10,7 @@ import { RuntimeContext } from "@mastra/core/runtime-context";
 import { ChunkFrom } from "@mastra/core/stream";
 import {
   AG_UI_TOOL_NAME_GENERATE_LIVE_VIEW_URL,
+  RUNTIME_CONTEXT_KEY_RUN_ID,
   RUNTIME_CONTEXT_KEY_THREAD_ID,
 } from "@scoutqa-dot-ai/scout-agent/src/config/constants";
 import { startOrGetBrowserSession } from "@scoutqa-dot-ai/scout-agent/src/lib/browser";
@@ -47,6 +48,7 @@ export class MastraAgent extends AbstractAgent {
           const threadId = input.threadId;
           const runId = input.runId;
           const runtimeContext = new RuntimeContext();
+          runtimeContext.set(RUNTIME_CONTEXT_KEY_RUN_ID, runId);
           runtimeContext.set(RUNTIME_CONTEXT_KEY_THREAD_ID, threadId);
 
           const convertedMessages = convertAGUIMessagesToMastra([

@@ -1,13 +1,22 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Tool } from "./tool-call-manager";
+import {
+  AG_UI_TOOL_NAME_NOVA_ACT_ACT,
+  TOOL_ID_EXECUTE_TEST_SCENARIO,
+  TOOL_ID_TROUBLESHOOT_WEBAPP,
+} from "@scoutqa-dot-ai/scout-agent/src/config/constants";
 
 function generateToolName(tool: Tool): string {
   const { knownTool, toolName } = tool;
   if (knownTool) {
     switch (knownTool.toolName) {
-      case "execute-test-scenario":
+      case TOOL_ID_EXECUTE_TEST_SCENARIO:
         return knownTool.args.scenario;
+      case TOOL_ID_TROUBLESHOOT_WEBAPP:
+        return knownTool.args.action;
+      case AG_UI_TOOL_NAME_NOVA_ACT_ACT:
+        return knownTool.args.action;
       case "browser_browser_click":
         return `Click on ${knownTool.args.element}`;
       case "browser_browser_hover":

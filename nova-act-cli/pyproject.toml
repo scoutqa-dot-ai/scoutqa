@@ -1,0 +1,8 @@
+[project]
+name = "nova-act-cli"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "nova-act>=2.0.357.0",
+    "playwright>=1.54.0",
+]

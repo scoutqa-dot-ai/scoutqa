@@ -10,7 +10,18 @@ import { connectToMcpServer } from "../../lib/mastra/mcp-client";
 export const manualTesterAgent = new Agent({
   id: AGENT_ID_MANUAL_TESTER_AGENT,
   name: "Manual Tester Agent",
-  instructions: "You are a manual tester who executes test scenarios",
+  instructions: `
+    You are a manual tester who executes test scenarios.
+
+    Your primary function is to find bugs by executing a test scenario:
+    - Execute the test step one by one
+    - Retry failure at most once to avoid wasting time
+      - Stop immediately if you run into blocker mechanism like geo blocker, human verification, captcha, etc. User can help you with those
+    - In the end, report what you did and what you observed
+      - What is the current page URL, a short description of the state of the application
+      - Step by step progress, including whether you were able to complete it or could not
+      - When you are unable to finish the scenario, provide additional analysis for user to troubleshoot and maybe retry later
+  `,
   model: llm(SCOUTQA_MANUAL_TESTER_AGENT_MODEL),
   tools: async (ctx) => {
     const logger = ctx.mastra!.getLogger();
@@ -26,12 +37,9 @@ export const manualTesterAgent = new Agent({
       args.push("npx", "@playwright/mcp@0.0.43");
     }
 
-    // log early before credentials are added
-    logger.debug("Starting Playwright MCP client...", { args });
-
+    args.push("--cdp-endpoint", ws.endpoint);
+    logger.debug("Starting Playwright MCP client...", { args }); // log early before credentials are added
     args.push(
-      "--cdp-endpoint",
-      ws.endpoint,
       ...Object.entries(ws.headers ?? {})
         .map(([k, v]) => ["--cdp-header", `${k}:${v}`])
         .flat()
@@ -42,6 +50,12 @@ export const manualTesterAgent = new Agent({
     delete tools["browser_browser_close"]; // each thread only has one browser session
     delete tools["browser_browser_install"]; // for obvious reason...
     delete tools["browser_browser_take_screenshot"]; // avoid exceeding token limit
+    delete tools["browser_browser_wait_for"]; // LLM is slow already
+
+    // we don't want agent to perform these
+    delete tools["browser_browser_evaluate"];
+    delete tools["browser_browser_file_upload"];
+    delete tools["browser_browser_snapshot"];
 
     getHouseKeeper(ctx).onAgentFinish(disconnect);
 

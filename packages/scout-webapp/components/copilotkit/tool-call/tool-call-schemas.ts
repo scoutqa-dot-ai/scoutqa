@@ -1,4 +1,8 @@
-import { TOOL_ID_EXECUTE_TEST_SCENARIO } from "@scoutqa-dot-ai/scout-agent/src/config/constants";
+import {
+  AG_UI_TOOL_NAME_NOVA_ACT_ACT,
+  TOOL_ID_EXECUTE_TEST_SCENARIO,
+  TOOL_ID_TROUBLESHOOT_WEBAPP,
+} from "@scoutqa-dot-ai/scout-agent/src/config/constants";
 import { z } from "zod/mini";
 
 export const knownToolSchema = z.discriminatedUnion("toolName", [
@@ -6,6 +10,18 @@ export const knownToolSchema = z.discriminatedUnion("toolName", [
     toolName: z.literal(TOOL_ID_EXECUTE_TEST_SCENARIO),
     args: z.object({
       scenario: z.string(),
+    }),
+  }),
+  z.object({
+    toolName: z.literal(TOOL_ID_TROUBLESHOOT_WEBAPP),
+    args: z.object({
+      action: z.string(),
+    }),
+  }),
+  z.object({
+    toolName: z.literal(AG_UI_TOOL_NAME_NOVA_ACT_ACT),
+    args: z.object({
+      action: z.string(),
     }),
   }),
   z.object({

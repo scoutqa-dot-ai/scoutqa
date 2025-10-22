@@ -26,6 +26,8 @@
     "@openrouter/ai-sdk-provider": "1.2.0",
     "@smithy/protocol-http": "^5.3.3",
     "@smithy/signature-v4": "^5.3.3",
+    "async-mutex": "^0.5.0",
+    "rxjs": "^7.8.2",
     "serialize-error": "^12.0.0",
     "zod": "^4.1.12"
   },

@@ -3,12 +3,24 @@ import { RuntimeContext } from "@mastra/core/runtime-context";
 import { serializeError } from "serialize-error";
 import {
   RUNTIME_CONTEXT_KEY_HOUSE_KEEPER,
+  RUNTIME_CONTEXT_KEY_RUN_ID,
   RUNTIME_CONTEXT_KEY_THREAD_ID,
 } from "../../config/constants";
 
 export interface MastraContext {
   mastra?: MastraUnion;
   runtimeContext: RuntimeContext;
+}
+
+export function getRunId({ runtimeContext }: MastraContext): string {
+  const runId =
+    runtimeContext.get<string, string | undefined>(
+      RUNTIME_CONTEXT_KEY_RUN_ID
+    ) ?? "";
+  if (runId.length === 0) {
+    throw new Error("Run ID is not set");
+  }
+  return runId;
 }
 
 export function getThreadId({ runtimeContext }: MastraContext): string {
