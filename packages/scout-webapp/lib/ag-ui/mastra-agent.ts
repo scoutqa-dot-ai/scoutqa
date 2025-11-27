@@ -37,6 +37,10 @@ export class MastraAgent extends AbstractAgent {
     super({ agentId: agent.id });
   }
 
+  public clone() {
+    return new MastraAgent(this.agent);
+  }
+
   run(input: RunAgentInput) {
     const { agent } = this;
     return new Observable<BaseEvent>((subscriber) => {

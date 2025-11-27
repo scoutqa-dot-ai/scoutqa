@@ -9,7 +9,7 @@ import { RenderMessage } from "./render-message";
 
 const ChatInner = () => {
   const { visibleMessages } = useCopilotChat();
-  const visibleMessagesLength = visibleMessages.length;
+  const visibleMessagesLength = visibleMessages?.length ?? 0;
   const suggestions = useMemo(() => {
     if (visibleMessagesLength === 0) {
       return [
