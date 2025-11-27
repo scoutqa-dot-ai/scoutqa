@@ -65,6 +65,10 @@ export class Publisher {
 
     // adapted from https://github.com/ag-ui-protocol/ag-ui/blob/59d980a/integrations/mastra/typescript/src/mastra.ts
     switch (chunk.type) {
+      case "text-start":
+        this.messageId = randomUUID();
+        break;
+
       case "text-delta": {
         const event: TextMessageChunkEvent = {
           type: EventType.TEXT_MESSAGE_CHUNK,
@@ -80,7 +84,6 @@ export class Publisher {
         const { toolCallId, toolName, args } = chunk.payload;
         const startEvent: ToolCallStartEvent = {
           type: EventType.TOOL_CALL_START,
-          parentMessageId: this.messageId,
           toolCallId,
           toolCallName: toolName,
         };
@@ -123,10 +126,6 @@ export class Publisher {
         this.publish(toolCallResultEvent);
         break;
       }
-
-      case "finish":
-        this.messageId = randomUUID();
-        break;
     }
   }
 
