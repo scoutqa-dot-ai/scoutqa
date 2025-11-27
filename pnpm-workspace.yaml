@@ -2,4 +2,5 @@ packages:
   - packages/**
 
 overrides:
+  "@ag-ui/core": "0.0.42-alpha.1"
   rxjs@^7: "^7.8.2"

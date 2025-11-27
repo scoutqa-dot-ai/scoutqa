@@ -84,6 +84,10 @@ export const RenderMessage = ({
     case "system":
       // intentionally left empty
       break;
+    case "activity":
+      // TODO: not sure what are these
+      console.log({ message });
+      break;
     default:
       throw message satisfies never;
   }
