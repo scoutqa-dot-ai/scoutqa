@@ -21,6 +21,8 @@ variable "region_azs" {
 variable "tags" {
   type = map(string)
   default = {
+    division = "technology"
+    department = "engineering"
     service = "scoutqa"
   }
 }
